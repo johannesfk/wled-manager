@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { invalidate } from '$app/navigation';
 	import type { PageData } from './$types';
 	export let data: PageData;
 
@@ -9,17 +10,29 @@
 	function formatMacAddress(mac) {
 		return mac.match(/.{1,2}/g).join(':');
 	}
+
+	function scan() {
+		console.log('scan');
+		invalidate('/api/mdns');
+	}
+
+	function rebootAll() {
+		console.log('rebootAll');
+		tableData.forEach((row) => {
+			fetch(`http://${row.host}:${row.port}/win&T=1`);
+		});
+	}
 </script>
 
 <h1 class="h1">Scan for wled devices</h1>
 <p>
 	The following devices was found on the network.
 	<br />
-	<a
-		type="button"
-		href="#scan"
-		class="btn m-4 preset-tonal-primary"
-		on:click={() => console.log('scan clicked')}>Scan again</a
+	<button type="button" class="btn m-4 preset-tonal-primary" on:click={() => scan()}
+		>Scan again</button
+	>
+	<button type="button" class="btn m-4 preset-tonal-error" on:click={() => rebootAll()}
+		>Reboot All</button
 	>
 </p>
 <div class="table-wrap">
