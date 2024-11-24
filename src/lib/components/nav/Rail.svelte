@@ -10,7 +10,7 @@
 
 	let hrefExample = '#';
 
-	let expanded = false;
+	let expanded = $state(false);
 </script>
 
 <Nav.Rail>

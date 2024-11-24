@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { invalidate } from '$app/navigation';
 	import type { PageData } from './$types';
-	export let data: PageData;
+	let { data }: PageData = $props();
 
 	// console.log(data);
 
@@ -28,10 +28,10 @@
 <p>
 	The following devices was found on the network.
 	<br />
-	<button type="button" class="btn m-4 preset-tonal-primary" on:click={() => scan()}
+	<button type="button" class="btn m-4 preset-tonal-primary" onclick={() => scan()}
 		>Scan again</button
 	>
-	<button type="button" class="btn m-4 preset-tonal-error" on:click={() => rebootAll()}
+	<button type="button" class="btn m-4 preset-tonal-error" onclick={() => rebootAll()}
 		>Reboot All</button
 	>
 </p>

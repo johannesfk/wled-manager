@@ -1,16 +1,21 @@
-<script>
+<script lang="ts">
 	import Rail from '$lib/components/nav/Rail.svelte';
 	import '../app.css';
 	import { onMount } from 'svelte';
+	interface Props {
+		children?: import('svelte').Snippet;
+	}
 
-	let time = new Date();
+	let { children }: Props = $props();
+
+	let time = $state(new Date());
 	function padWithZero(num) {
 		return String(num).padStart(2, '0');
 	}
 
-	$: hours = padWithZero(time.getHours());
-	$: minutes = padWithZero(time.getMinutes());
-	$: seconds = padWithZero(time.getSeconds());
+	let hours = $derived(padWithZero(time.getHours()));
+	let minutes = $derived(padWithZero(time.getMinutes()));
+	let seconds = $derived(padWithZero(time.getSeconds()));
 
 	onMount(() => {
 		const interval = setInterval(() => {
@@ -37,7 +42,7 @@
 		</aside>
 		<!-- Main Content -->
 		<main class="space-y-4 p-4">
-			<slot></slot>
+			{@render children?.()}
 		</main>
 	</div>
 	<!-- Footer -->
