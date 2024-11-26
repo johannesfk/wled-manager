@@ -9,6 +9,7 @@
 	let ctx: CanvasRenderingContext2D | null;
 	let tempCanvas: HTMLCanvasElement;
 	let tempCtx: CanvasRenderingContext2D | null;
+	let brightness = 1.75;
 
 	function setupWebSocket() {
 		if (typeof window !== 'undefined') {
@@ -50,10 +51,15 @@
 		// Create ImageData (Canvas requires RGBA, so we need to add Alpha)
 		const imageData = ctx.createImageData(width, height);
 		for (let i = startSkip, j = 0; i < rgbData.length; i += 3, j++) {
-			const r = rgbData[i];
-			const g = rgbData[i + 1];
-			const b = rgbData[i + 2];
+			let r = rgbData[i];
+			let g = rgbData[i + 1];
+			let b = rgbData[i + 2];
 			const alpha = 255;
+
+			// Apply brightness filter
+			r = Math.min(255, r * brightness);
+			g = Math.min(255, g * brightness);
+			b = Math.min(255, b * brightness);
 
 			imageData.data[j * 4] = r; // Red
 			imageData.data[j * 4 + 1] = g; // Green
