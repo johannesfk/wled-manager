@@ -26,7 +26,7 @@
 	const CONNECTION_TIMEOUT = 5000;
 	const MAX_RETRIES = 3;
 
-	let pingInterval: string | number | NodeJS.Timeout | undefined;
+	let pingInterval: number;
 
 	$effect(() => {
 		console.log('connectionStates changed:', connectionStates);
@@ -39,8 +39,11 @@
 	}
 
 	function connectSingle(row, retryCount = 0) {
+		// console.log(row);
 		if (isRebooting || isReconnecting) {
-			console.log(`Skipping connection for ${row.host} - reboot/reconnect in progress`);
+			console.log(
+				`Skipping connection for ${row.addresses[0]}:${row.port} - reboot/reconnect in progress`
+			);
 			return;
 		}
 		// Set initial connection state
@@ -58,7 +61,7 @@
 		}, CONNECTION_TIMEOUT);
 
 		try {
-			const ws = new WebSocket(`ws://${row.host}:${row.port}/ws`);
+			const ws = new WebSocket(`ws://${row.addresses[0]}:${row.port}/ws`);
 
 			ws.onopen = () => {
 				clearTimeout(timeoutId);
@@ -67,7 +70,7 @@
 					retries: retryCount,
 					error: null
 				});
-				console.log(`Connected to WebSocket for ${row.host}`);
+				console.log(`Connected to WebSocket for ${row.addresses[0]}:${row.port}`);
 
 				// Send ping every 5 seconds
 				pingInterval = setInterval(() => {
@@ -94,14 +97,14 @@
 						state: data.state
 					});
 				} catch (error) {
-					console.error(`Failed to process message from ${row.host}:`, error);
+					console.error(`Failed to process message from ${row.addresses[0]}:${row.port}:`, error);
 				}
 			};
 
 			ws.onclose = (event) => {
 				clearTimeout(timeoutId);
 				clearInterval(pingInterval);
-				console.log(`WebSocket closed for ${row.host}`);
+				console.log(`WebSocket closed for ${row.addresses[0]}:${row.port}`);
 
 				if (!event.wasClean) {
 					handleConnectionError(row, new Error('Connection closed unexpectedly'));
@@ -155,7 +158,7 @@
 	function handleConnectionError(row, error) {
 		const state = connectionStates.get(row.host);
 
-		console.error(`WebSocket error for ${row.host}:`, error);
+		console.error(`WebSocket error for ${row.addresses[0]}:${row.port}:`, error);
 
 		connectionStates.set(row.host, {
 			connected: false,
@@ -166,7 +169,9 @@
 		// Attempt reconnection if under max retries
 		if (state && state.retries < MAX_RETRIES) {
 			const nextRetry = state.retries + 1;
-			console.log(`Attempting reconnection ${nextRetry}/${MAX_RETRIES} for ${row.host}`);
+			console.log(
+				`Attempting reconnection ${nextRetry}/${MAX_RETRIES} for ${row.addresses[0]}:${row.port}`
+			);
 
 			setTimeout(() => {
 				connectSingle(row, nextRetry);
@@ -252,7 +257,7 @@
 				<th>MAC</th>
 				<th>Version</th>
 				<th>FPS</th>
-				<th>Live</th>
+				<th>State</th>
 				<th>Data Source IP</th>
 				<th>Data Source Portocol</th>
 				<th>
@@ -285,14 +290,22 @@
 						class={connectionStates.get(row.host)?.info?.live
 							? 'text-success-400-600'
 							: 'text-warning-400-600'}
-						>{connectionStates.get(row.host)?.info?.live ? 'Live' : 'Static'}</td
+						>{connectionStates.get(row.host)?.info?.live ? 'Live' : 'Standalone'}</td
 					>
-					<td>{connectionStates.get(row.host)?.info?.lip ?? 'N/A'}</td>
-					<td>{connectionStates.get(row.host)?.info?.lm ?? 'N/A'}</td>
+					<td
+						>{connectionStates.get(row.host)?.info?.lip
+							? connectionStates.get(row.host)?.info?.lip
+							: 'N/A'}</td
+					>
+					<td
+						>{connectionStates.get(row.host)?.info?.lm
+							? connectionStates.get(row.host)?.info?.lm
+							: 'N/A'}</td
+					>
 					<td class="w-52">
 						{#if connectionStates.get(row.host)?.connected}
 							{#if showLiveview}
-								<Liveview baseUrl={`http://${row.host}:${row.port}`} />
+								<Liveview baseUrl={`http://${row.addresses[0]}:${row.port}`} />
 							{:else}
 								<span class="text-neutral-300">Paused</span>
 							{/if}
