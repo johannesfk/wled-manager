@@ -78,6 +78,7 @@ export interface State {
 	seg?: Seg[];
 }
 
+
 interface Nl {
 	/**
 	 * Nightlight currently active

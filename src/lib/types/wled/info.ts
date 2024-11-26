@@ -1,4 +1,4 @@
-import { WledJsonApiError } from '../other/WledJsonApiError';
+import { WledJsonApiError } from '../../wled-api/other/WledJsonApiError';
 
 export class Info {
 	/**
